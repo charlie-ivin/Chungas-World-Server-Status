@@ -6,7 +6,7 @@
 <title>Chungas World</title>
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="stylesheet" href="style.css?v=3" />
-<link rel="stylesheet" href="home.css?v=9" />
+<link rel="stylesheet" href="home.css?v=10" />
 </head>
 <body>
 <div id="visMark"></div>
@@ -108,8 +108,8 @@ function renderList() {
     const card = document.createElement("div"); card.className = "att-card"; card.id = a.id;
     card.appendChild(CW.icon(a));
     const d = document.createElement("div");
-    d.innerHTML = `<div class="att-name">${CW.esc(a.name)}</div>
-      <span class="att-pill ${s.state}">${CW.esc(s.label)}</span>
+    d.className = "att-body";
+    d.innerHTML = `<div class="att-top"><div class="att-name">${CW.esc(a.name)}</div><span class="att-pill ${s.state}">${CW.esc(s.label)}</span></div>
       <div class="att-hours">${CW.esc(s.hours)}</div>
       ${s.note ? `<div class="att-note">${CW.esc(s.note)}</div>` : ""}`;
     card.appendChild(d); list.appendChild(card);
