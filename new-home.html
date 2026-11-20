@@ -6,9 +6,10 @@
 <title>Chungas World</title>
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="stylesheet" href="style.css?v=3" />
-<link rel="stylesheet" href="home.css?v=5" />
+<link rel="stylesheet" href="home.css?v=6" />
 </head>
 <body>
+<div id="visMark"></div>
 <div class="bg"><div id="video"></div><div class="dim" id="dim"></div></div>
 
 <div class="stage">
@@ -42,7 +43,7 @@
 <script src="config.js?v=1"></script>
 <script src="core.js?v=1"></script>
 <script src="home.js?v=1"></script>
-<script src="links.js?v=3"></script>
+<script src="links.js?v=4"></script>
 <script src="gallery.js?v=2"></script>
 <script>
 try { CWLinks.render(document.getElementById("cwLinks")); } catch (e) { console.error("Links failed:", e); }
@@ -90,6 +91,33 @@ function fitList() {
   while (k > 0.4 && l.scrollHeight > l.clientHeight + 1) { k -= 0.03; l.style.setProperty("--k", k.toFixed(2)); }
 }
 addEventListener("resize", () => data && fitList());
+
+// Embedded in another site (e.g. Google Sites) the frame can be taller than the visitor's window, and the visitor scrolls the outer page.
+// A column of thin invisible strips lets the browser tell us which strips are on screen, so we can fit the page to the visible part.
+if (window.IntersectionObserver && window.top !== window) {
+  const seen = new Map(); let io = null;
+  const apply = () => {
+    const root = document.documentElement.style; let top = Infinity, bottom = -Infinity;
+    seen.forEach(([t, b]) => { top = Math.min(top, t); bottom = Math.max(bottom, b); });
+    if (matchMedia("(max-width: 820px)").matches || !(bottom - top >= 120)) { root.removeProperty("--vt"); root.removeProperty("--vh"); }
+    else { root.setProperty("--vt", Math.round(top) + "px"); root.setProperty("--vh", Math.round(bottom - top) + "px"); }
+    if (data) fitList();
+  };
+  const build = () => {
+    if (io) io.disconnect(); seen.clear();
+    const box = $("visMark"), H = innerHeight, S = 8; box.innerHTML = "";
+    io = new IntersectionObserver(es => {
+      es.forEach(e => { const r = e.intersectionRect; if (e.isIntersecting && r.height > 0) seen.set(e.target, [r.top, r.bottom]); else seen.delete(e.target); });
+      apply();
+    }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+    for (let y = 0; y < H; y += S) {
+      const d = document.createElement("i");
+      d.style.cssText = `position:absolute;left:0;width:2px;top:${y}px;height:${Math.min(S, H - y)}px`;
+      box.appendChild(d); io.observe(d);
+    }
+  };
+  build(); let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(build, 150); });
+}
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => data && fitList());
 
 let lastLinks = "";
