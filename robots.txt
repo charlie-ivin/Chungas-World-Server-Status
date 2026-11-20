@@ -1,5 +1,0 @@
-User-agent: *
-Disallow: /admin.html
-Disallow: /admin.js
-
-Sitemap: https://coasters-park-queue-times.chungasworld.co.uk/sitemap.xml
