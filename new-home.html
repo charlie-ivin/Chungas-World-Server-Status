@@ -5,18 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Chungas World</title>
 <link rel="icon" type="image/png" href="favicon.png" />
-<link rel="stylesheet" href="style.css?v=1" />
-<link rel="stylesheet" href="home.css?v=1" />
+<link rel="stylesheet" href="style.css?v=2" />
+<link rel="stylesheet" href="home.css?v=2" />
 </head>
 <body>
 <div class="bg"><div id="video"></div><div class="dim" id="dim"></div></div>
 
-<main class="hero">
-  <div>
-    <h1 id="heroTitle"></h1>
-    <p id="heroSub"></p>
-  </div>
-</main>
+<div class="stage">
+  <main class="hero">
+    <div>
+      <h1 id="heroTitle"></h1>
+      <p id="heroSub"></p>
+    </div>
+    <a class="hero-more" href="#links">▼ EXPLORE CHUNGAS WORLD</a>
+  </main>
+
+  <nav class="links" id="links" aria-label="Chungas World website links">
+    <h2 class="pixel-heading">EXPLORE CHUNGAS WORLD</h2>
+    <div class="cw-links" id="cwLinks"></div>
+  </nav>
+</div>
 
 <aside class="side">
   <div class="side-head">
@@ -29,7 +37,9 @@
 <script src="config.js?v=1"></script>
 <script src="core.js?v=1"></script>
 <script src="home.js?v=1"></script>
+<script src="links.js?v=1"></script>
 <script>
+CWLinks.render(document.getElementById("cwLinks"));
 const $ = id => document.getElementById(id);
 let data, curYt = null;
 
