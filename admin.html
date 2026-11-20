@@ -35,6 +35,10 @@
       <div class="field-row"><div class="field"><label for="homeSub">Text under the title</label>
         <textarea id="homeSub" rows="4" style="width:640px;max-width:100%"></textarea></div></div>
       <div class="field-row">
+        <div class="field"><label for="homeVideo">Video file <small>(a video in this repo, e.g. <code>background.mp4</code>. Sharpest option. Leave empty to use the YouTube link below)</small></label>
+          <input id="homeVideo" style="width:420px;max-width:100%" placeholder="background.mp4" /></div>
+      </div>
+      <div class="field-row">
         <div class="field"><label for="homeYt">YouTube link <small>(background video: muted, looping, no controls)</small></label>
           <input id="homeYt" style="width:420px;max-width:100%" placeholder="https://www.youtube.com/watch?v=..." /></div>
         <div class="field"><label for="homeDim">Video darkness % <small>(0–90)</small></label>
@@ -69,9 +73,9 @@
 </div>
 <script src="config.js?v=1"></script>
 <script src="core.js?v=1"></script>
-<script src="home.js?v=1"></script>
+<script src="home.js?v=2"></script>
 <script src="links.js?v=4"></script>
 <script>CWLinks.render(document.getElementById("cwLinks"), { newTab: true });</script>
-<script src="admin.js?v=4"></script>
+<script src="admin.js?v=5"></script>
 </body>
 </html>
