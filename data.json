@@ -74,8 +74,8 @@
     },
     {
       "id": "maim-school",
-      "name": "Maim School",
-      "icon": "maim-school",
+      "name": "Main School",
+      "icon": "main-school",
       "description": "",
       "status": "open",
       "allDay": false,
