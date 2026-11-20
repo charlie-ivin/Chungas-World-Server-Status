@@ -6,7 +6,7 @@
 <title>Chungas World</title>
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="stylesheet" href="style.css?v=3" />
-<link rel="stylesheet" href="home.css?v=7" />
+<link rel="stylesheet" href="home.css?v=8" />
 </head>
 <body>
 <div id="visMark"></div>
@@ -49,7 +49,18 @@
 try { CWLinks.render(document.getElementById("cwLinks")); } catch (e) { console.error("Links failed:", e); }
 try { CWGallery.render(document.getElementById("cwPhotos")); } catch (e) { console.error("Gallery failed:", e); document.getElementById("gallery").hidden = true; }
 const $ = id => document.getElementById(id);
-let data, curYt = null, ccTimer = null;
+let data, curYt = null, ccTimer = null, showTimer = null, playedOnce = false;
+
+// The video stays hidden until it is really playing (so YouTube's big play button and title never show), then fades in.
+addEventListener("message", e => {
+  if (!/youtube/.test(e.origin)) return;
+  let d; try { d = JSON.parse(e.data); } catch (_) { return; }
+  const st = d.event === "onStateChange" ? d.info : (d.info && d.info.playerState);
+  if (st === undefined || st === null) return;
+  const v = $("video"); clearTimeout(showTimer);
+  if (st === 1) { showTimer = setTimeout(() => { v.classList.add("on"); playedOnce = true; }, playedOnce ? 250 : 3000); }   // first time: wait for the title to fade
+  else if (st === 0 || st === 2 || st === 5 || st === -1) { if (!playedOnce) v.classList.remove("on"); }
+});
 
 function renderHome() {
   const h = CWHome.withDefaults(data.home);
@@ -59,15 +70,20 @@ function renderHome() {
   const id = CWHome.ytId(h.youtube);
   if (id !== curYt) {                       // only touch the video if the link changed
     curYt = id;
-    $("video").innerHTML = id ? `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&cc_load_policy=0&enablejsapi=1" allow="autoplay; encrypted-media" tabindex="-1" aria-hidden="true"></iframe>` : "";
-    clearInterval(ccTimer);
-    if (id) {                                // keep telling the player to switch subtitles off (they can come back when the video loops)
-      const off = () => { const f = $("video").querySelector("iframe"); if (!f || !f.contentWindow) return;
-        ["captions", "cc"].forEach(m => f.contentWindow.postMessage(JSON.stringify({ event: "command", func: "unloadModule", args: [m] }), "*")); };
-      ccTimer = setInterval(off, 2000); setTimeout(off, 500);
+    $("video").classList.remove("on"); playedOnce = false; clearTimeout(showTimer); clearInterval(ccTimer);
+    $("video").innerHTML = id ? `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&cc_load_policy=0&vq=hd2160&enablejsapi=1" allow="autoplay; encrypted-media" tabindex="-1" aria-hidden="true"></iframe>` : "";
+    if (id) {
+      const send = (func, args) => { const f = $("video").querySelector("iframe"); if (f && f.contentWindow) f.contentWindow.postMessage(JSON.stringify({ event: "command", func, args: args || [] }), "*"); };
+      const tune = () => {
+        send("unloadModule", ["captions"]); send("unloadModule", ["cc"]);                // no subtitles
+        send("setPlaybackQualityRange", ["hd2160", "hd2160"]); send("setPlaybackQuality", ["hd2160"]);   // ask for 4K
+        const f = $("video").querySelector("iframe");                                    // ask the player to report its state back to us
+        if (f && f.contentWindow) f.contentWindow.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), "*");
+      };
+      ccTimer = setInterval(tune, 2000); setTimeout(tune, 500);
+      setTimeout(() => { if (!playedOnce) $("video").classList.add("on"); }, 8000);       // safety: never leave the video hidden
     }
-  }
-}
+  }}
 
 function renderList() {
   const list = $("list"); list.innerHTML = "";
