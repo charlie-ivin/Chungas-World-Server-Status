@@ -1,0 +1,132 @@
+<!-- Chungas World – Rides open / closed widget
+     Paste this whole block into a Custom HTML / Embed block, or save as rides-widget.html and use an iframe. -->
+<div id="cwr" class="cwr">
+  <div class="cwr-head">
+    <div class="cwr-park" id="cwr-park">Loading park status…</div>
+    <div class="cwr-tabs" role="tablist">
+      <button class="on" data-f="all">All</button>
+      <button data-f="open">Open</button>
+      <button data-f="closed">Closed</button>
+    </div>
+  </div>
+  <div class="cwr-grid" id="cwr-grid"></div>
+  <div class="cwr-foot" id="cwr-foot"></div>
+</div>
+
+<style>
+.cwr{--bg:#fff;--card:#f6f7f9;--ink:#15181d;--mute:#5d6672;--line:#e1e4e9;--ok:#157a3d;--okbg:#e2f5e9;--warn:#9a5b00;--warnbg:#fdf0d6;--bad:#b3261e;--badbg:#fbe4e2;
+ font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);padding:14px;border-radius:14px;box-sizing:border-box}
+@media(prefers-color-scheme:dark){.cwr{--bg:#14171c;--card:#1d2128;--ink:#eef0f3;--mute:#9aa3af;--line:#2b313a;--ok:#5fd68a;--okbg:#14301f;--warn:#f2b955;--warnbg:#33260c;--bad:#ff8a80;--badbg:#3a1a18}}
+.cwr *{box-sizing:border-box}
+.cwr-head{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px}
+.cwr-park{font-weight:650;font-size:16px}
+.cwr-park small{display:block;font-weight:400;color:var(--mute);font-size:13px}
+.cwr-tabs{display:flex;gap:4px;background:var(--card);padding:3px;border-radius:999px}
+.cwr-tabs button{border:0;background:none;color:var(--mute);font:inherit;font-size:13px;padding:5px 14px;border-radius:999px;cursor:pointer}
+.cwr-tabs button.on{background:var(--bg);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.cwr-tabs button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.cwr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.cwr-card{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+.cwr-ico{flex:none;width:52px;height:52px;border-radius:10px;background:var(--bg);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;font-weight:700;color:var(--mute);font-size:18px}
+.cwr-ico img{width:100%;height:100%;object-fit:cover;display:block}
+.cwr-info{min-width:0}
+.cwr-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cwr-pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;margin:3px 0}
+.cwr-pill.open{background:var(--okbg);color:var(--ok)}
+.cwr-pill.soon{background:var(--warnbg);color:var(--warn)}
+.cwr-pill.closed{background:var(--badbg);color:var(--bad)}
+.cwr-sub{font-size:12.5px;color:var(--mute)}
+.cwr-foot{margin-top:10px;font-size:12px;color:var(--mute)}
+.cwr-empty{color:var(--mute);padding:14px 4px}
+</style>
+
+<script>
+(function(){
+  /* ===== SETTINGS ===== */
+  var DATA_URL  = "https://coasters-park-queue-times.chungasworld.co.uk/data.json";
+  var ICON_BASE = "https://www.chungasworld.co.uk/cw-icons/"; // icons live at /cw-icons/<ride-name>.png
+  var ICON_EXT  = ["png","webp","jpg"];                        // tried in this order
+  var ICON_OVERRIDE = {                                        // optional: ride id -> exact file name (no extension)
+    // "tmp-1": "ice-boat-racing"
+  };
+  var REFRESH_MS = 60000;
+  /* ==================== */
+
+  var grid=document.getElementById("cwr-grid"), parkEl=document.getElementById("cwr-park"),
+      foot=document.getElementById("cwr-foot"), filter="all", data=null;
+
+  function slug(s){return s.toLowerCase().replace(/['’]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
+  function ukNow(){
+    var p=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()),h=0,m=0;
+    p.forEach(function(x){if(x.type==="hour")h=+x.value%24;if(x.type==="minute")m=+x.value;});
+    return h*60+m;
+  }
+  function mins(t){var a=String(t).split(":");return +a[0]*60+(+a[1]||0);}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+  function parkHours(h){
+    var pe=h.privateEvent;
+    if(pe&&pe.enabled&&!pe.useParkHours)return{open:pe.open,close:pe.close,event:true};
+    return{open:h.open,close:h.close,event:!!(pe&&pe.enabled)};
+  }
+
+  /* returns {state:'open'|'soon'|'closed', label, sub} */
+  function rideStatus(r,h,now){
+    var s=h.seasonalClosure;
+    if(s&&s.enabled)return{state:"closed",label:"Closed for the season",sub:s.reopenText||""};
+    if(h.closedAllDay)return{state:"closed",label:"Closed all day",sub:"Park is closed today"};
+    var ph=parkHours(h),o=ph.open,c=ph.close;
+    if(r.customHours&&r.customHours.enabled){o=r.customHours.open;c=r.customHours.close;}
+    if(r.status==="closed")return{state:"closed",label:"Closed",sub:"Temporarily closed"};
+    var om=mins(o),cm=mins(c);
+    if(now<om)return{state:"soon",label:"Opening at "+o,sub:"Open "+o+" – "+c};
+    if(now>=cm)return{state:"closed",label:"Closed for today",sub:"Opens tomorrow at "+o};
+    var q=r.queue,qs=(q==="na"||q==null)?"Closes at "+c:(q>0?q+" min wait":"No wait")+" · closes "+c;
+    return{state:"open",label:"Open",sub:qs};
+  }
+
+  function icon(r){
+    var base=ICON_OVERRIDE[r.id]||r.icon||slug(r.name),i=0;
+    var src=function(){return /^https?:|^\//.test(base)&&base.indexOf(".")>-1?base:ICON_BASE+base+"."+ICON_EXT[i];};
+    var img=new Image();img.alt="";img.loading="lazy";
+    img.onerror=function(){i++;if(!/^https?:|^\//.test(base)&&i<ICON_EXT.length){img.src=src();}else{img.remove();holder.textContent=r.name.charAt(0);}};
+    var holder=document.createElement("div");holder.className="cwr-ico";
+    holder.appendChild(img);img.src=src();
+    return holder;
+  }
+
+  function render(){
+    if(!data)return;
+    var h=data.hours||{},now=ukNow(),ph=parkHours(h),s=h.seasonalClosure;
+    var ps=rideStatus({status:"open"},h,now);
+    var parkLine=ps.state==="open"?"Park open":ps.label.replace("Opening","Park opening").replace("Closed","Park closed");
+    parkEl.innerHTML=esc(parkLine)+"<small>"+esc((s&&s.enabled)?(s.reopenText||""):(h.closedAllDay?"":("Today "+ph.open+" – "+ph.close)+(h.extended?" · Extended hours":"")+(ph.event?" · Private event":"")))+"</small>";
+    var rides=(data.rides||[]).map(function(r){return{r:r,s:rideStatus(r,h,now)};});
+    var order={open:0,soon:1,closed:2};
+    rides.sort(function(a,b){return order[a.s.state]-order[b.s.state]||a.r.name.localeCompare(b.r.name);});
+    var shown=rides.filter(function(x){return filter==="all"||(filter==="open"?x.s.state==="open":x.s.state!=="open");});
+    grid.innerHTML="";
+    if(!shown.length){grid.innerHTML='<div class="cwr-empty">Nothing to show here right now.</div>';}
+    shown.forEach(function(x){
+      var c=document.createElement("div");c.className="cwr-card";
+      c.appendChild(icon(x.r));
+      var d=document.createElement("div");d.className="cwr-info";
+      d.innerHTML='<div class="cwr-name" title="'+esc(x.r.name)+'">'+esc(x.r.name)+'</div><span class="cwr-pill '+x.s.state+'">'+esc(x.s.label)+'</span><div class="cwr-sub">'+esc(x.s.sub)+'</div>';
+      c.appendChild(d);grid.appendChild(c);
+    });
+    var open=rides.filter(function(x){return x.s.state==="open";}).length;
+    foot.textContent=open+" of "+rides.length+" attractions open · UK time · updates automatically";
+  }
+
+  function load(){
+    fetch(DATA_URL+"?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json();})
+      .then(function(j){data=j;render();})
+      .catch(function(){parkEl.textContent="Couldn’t load ride times. Please try again soon.";});
+  }
+  document.querySelector("#cwr .cwr-tabs").addEventListener("click",function(e){
+    var b=e.target.closest("button");if(!b)return;
+    filter=b.dataset.f;[].forEach.call(this.children,function(x){x.classList.toggle("on",x===b);});render();
+  });
+  load();setInterval(load,REFRESH_MS);setInterval(render,30000);
+})();
+</script>
