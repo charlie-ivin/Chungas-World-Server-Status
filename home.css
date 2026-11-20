@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Anton&display=swap");
-:root { --side: 340px; }
+:root { --side: clamp(340px, 22vw, 430px); }
 html, body { height: 100%; }
 body { margin: 0; background: #1c1c19; overflow: hidden; }
 
@@ -35,12 +35,14 @@ body { margin: 0; background: #1c1c19; overflow: hidden; }
 .side-head .park-status-pill { font-size: 8px; padding: 6px 8px; }
 #list { --k: 1; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: calc(10px * var(--k)); overflow-y: auto; scrollbar-width: none; }
 #list::-webkit-scrollbar { display: none; }
-.side .att-card { flex: 1 0 auto; align-items: center; padding: calc(9px * var(--k)); gap: calc(10px * var(--k)); box-shadow: 3px 3px 0 rgba(0,0,0,.45); }
-.side .att-ico { width: calc(56px * var(--k)); height: calc(56px * var(--k)); font-size: calc(16px * var(--k)); border-width: 2px; }
-.side .att-name { font-size: calc(14px * var(--k)); line-height: 1.2; margin-bottom: calc(4px * var(--k)); }
-.side .att-pill { font-size: calc(8px * var(--k)); padding: calc(5px * var(--k)) calc(7px * var(--k)); border-width: 2px; }
-.side .att-hours { font-size: calc(12px * var(--k)); line-height: 1.25; margin-top: calc(3px * var(--k)); }
-.side .att-note { font-size: calc(11px * var(--k)); margin-top: calc(2px * var(--k)); }
+.side .att-card { flex: 1 0 auto; align-items: center; padding: calc(9px * var(--k)); gap: calc(11px * var(--k)); box-shadow: 3px 3px 0 rgba(0,0,0,.45); }
+.side .att-ico { width: calc(54px * var(--k)); height: calc(54px * var(--k)); font-size: calc(16px * var(--k)); border-width: 2px; }
+.side .att-body { flex: 1; min-width: 0; }
+.side .att-top { display: flex; align-items: flex-start; justify-content: space-between; gap: calc(8px * var(--k)); }
+.side .att-name { flex: 1; min-width: 0; font-size: calc(17px * var(--k)); line-height: 1.15; margin: 0; }
+.side .att-pill { flex: none; max-width: 52%; box-sizing: border-box; text-align: center; font-size: calc(9px * var(--k)); line-height: 1.4; padding: calc(5px * var(--k)) calc(7px * var(--k)); border-width: 2px; margin-top: calc(1px * var(--k)); }
+.side .att-hours { font-size: calc(14px * var(--k)); line-height: 1.25; margin-top: calc(4px * var(--k)); }
+.side .att-note { font-size: calc(12px * var(--k)); margin-top: calc(2px * var(--k)); }
 
 /* Gallery */
 .gallery[hidden] { display: none; }
