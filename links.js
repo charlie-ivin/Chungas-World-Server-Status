@@ -1,16 +1,14 @@
-// The navigation buttons from the old site (www.chungasworld.co.uk), shared by the home page,
-// /admin and the attractions gallery. Edit the list here and every page updates.
+// The "EXPLORE CHUNGAS WORLD" buttons. Shared by the home page and /admin.
+// The live list is stored in data.json under "links" and edited on the /admin page.
+// The list below is only the FALLBACK, used when data.json has no "links" yet (or fails to load).
 window.CWLinks = (() => {
   const OLD = "https://www.chungasworld.co.uk";
 
-  // To remove the NEW banner: change `const featured = {...};` to `const featured = null;`
   const featured = {
     label: "From Real Life to Redstone: Read the Story Behind Chungas World's Polmanter Recreation",
     href: OLD + "/blog/the-story-behind-the-polmanter-recreation"
   };
 
-  // EDIT / REMOVE: each button is ONE line: ["Button text", "/path"]. Delete the line to remove it,
-  // change the text or path to edit it. A path starting with http:// or https:// is used as-is.
   const groups = [
     { title: "Home", links: [
       ["Chungas World Home", "/home"]
@@ -60,32 +58,58 @@ window.CWLinks = (() => {
     ] }
   ];
 
+  const clone = o => JSON.parse(JSON.stringify(o));
+
+  // The original list in the shape stored in data.json.
+  const defaults = () => ({
+    featured: clone(featured),
+    groups: groups.map(g => ({ title: g.title, links: g.links.map(([label, path]) => ({ label, path })) }))
+  });
+
+  // Turns whatever is in data.json into a safe, complete list (falls back to the original if there's nothing usable).
+  function normalize(c) {
+    if (!c || !Array.isArray(c.groups)) return defaults();
+    const f = "featured" in c ? c.featured : defaults().featured;
+    return {
+      featured: f && typeof f === "object" ? { label: String(f.label || ""), href: String(f.href || "") } : null,
+      groups: c.groups.map(g => ({
+        title: String((g && g.title) || ""),
+        links: Array.isArray(g && g.links) ? g.links.map(l => ({ label: String((l && l.label) || ""), path: String((l && l.path) || "") })) : []
+      }))
+    };
+  }
+
+  // "/coasters-park" → the old site; "https://…" is used as written.
+  const hrefFor = p => {
+    p = String(p || "").trim();
+    if (/^https?:\/\//i.test(p)) return p;
+    return OLD + (p.startsWith("/") ? "" : "/") + p;
+  };
+
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
 
-  // Fills `root` with the old-site buttons. opts.newTab → open links in a new tab (used on /admin so a login isn't lost).
+  // Fills `root` with the buttons. opts.links → the list from data.json (omit to use the original list).
+  // opts.newTab → open links in a new tab (used on /admin so a login isn't lost).
   function render(root, opts) {
     opts = opts || {};
+    const cfg = normalize(opts.links);
     root.innerHTML = "";
-    const link = (cls, label, path) => {
-      const a = el("a", cls, label); a.href = /^https?:\/\//.test(path) ? path : OLD + path;
-      if (opts.newTab) { a.target = "_blank"; a.rel = "noopener"; }
-      return a;
-    };
-    if (featured && featured.label) {            // set `featured = null` above to remove the NEW banner
-      const f = el("a", "cw-feature"); f.href = featured.href;
-      if (opts.newTab) { f.target = "_blank"; f.rel = "noopener"; }
+    const tab = a => { if (opts.newTab) { a.target = "_blank"; a.rel = "noopener"; } return a; };
+    if (cfg.featured && cfg.featured.label) {
+      const f = tab(el("a", "cw-feature")); f.href = hrefFor(cfg.featured.href);
       f.appendChild(el("span", "cw-feature-tag", "NEW"));
-      f.appendChild(el("span", "", featured.label));
+      f.appendChild(el("span", "", cfg.featured.label));
       root.appendChild(f);
     }
-    groups.forEach(g => {
-      if (!g.links.length) return;               // a group with no links is skipped
+    cfg.groups.forEach(g => {
+      const links = g.links.filter(l => l.label.trim());
+      if (!links.length) return;                       // empty sections are hidden
       const sec = el("section", "cw-group");
-      sec.appendChild(el("h3", "cw-group-title pixel-heading", g.title.toUpperCase()));
+      if (g.title.trim()) sec.appendChild(el("h3", "cw-group-title pixel-heading", g.title.toUpperCase()));
       const grid = el("div", "cw-btns");
-      g.links.forEach(([label, path]) => grid.appendChild(link("cw-btn", label, path)));
+      links.forEach(l => { const a = tab(el("a", "cw-btn", l.label)); a.href = hrefFor(l.path); grid.appendChild(a); });
       sec.appendChild(grid); root.appendChild(sec);
     });
   }
-  return { OLD, featured, groups, render };
+  return { OLD, defaults, normalize, hrefFor, render };
 })();
