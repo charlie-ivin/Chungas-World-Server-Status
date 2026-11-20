@@ -3,11 +3,14 @@
 window.CWLinks = (() => {
   const OLD = "https://www.chungasworld.co.uk";
 
+  // To remove the NEW banner: change `const featured = {...};` to `const featured = null;`
   const featured = {
     label: "From Real Life to Redstone: Read the Story Behind Chungas World's Polmanter Recreation",
     href: OLD + "/blog/the-story-behind-the-polmanter-recreation"
   };
 
+  // EDIT / REMOVE: each button is ONE line: ["Button text", "/path"]. Delete the line to remove it,
+  // change the text or path to edit it. A path starting with http:// or https:// is used as-is.
   const groups = [
     { title: "Home", links: [
       ["Chungas World Home", "/home"]
@@ -64,16 +67,19 @@ window.CWLinks = (() => {
     opts = opts || {};
     root.innerHTML = "";
     const link = (cls, label, path) => {
-      const a = el("a", cls, label); a.href = OLD + path;
+      const a = el("a", cls, label); a.href = /^https?:\/\//.test(path) ? path : OLD + path;
       if (opts.newTab) { a.target = "_blank"; a.rel = "noopener"; }
       return a;
     };
-    const f = el("a", "cw-feature"); f.href = featured.href;
-    if (opts.newTab) { f.target = "_blank"; f.rel = "noopener"; }
-    f.appendChild(el("span", "cw-feature-tag", "NEW"));
-    f.appendChild(el("span", "", featured.label));
-    root.appendChild(f);
+    if (featured && featured.label) {            // set `featured = null` above to remove the NEW banner
+      const f = el("a", "cw-feature"); f.href = featured.href;
+      if (opts.newTab) { f.target = "_blank"; f.rel = "noopener"; }
+      f.appendChild(el("span", "cw-feature-tag", "NEW"));
+      f.appendChild(el("span", "", featured.label));
+      root.appendChild(f);
+    }
     groups.forEach(g => {
+      if (!g.links.length) return;               // a group with no links is skipped
       const sec = el("section", "cw-group");
       sec.appendChild(el("h3", "cw-group-title pixel-heading", g.title.toUpperCase()));
       const grid = el("div", "cw-btns");
