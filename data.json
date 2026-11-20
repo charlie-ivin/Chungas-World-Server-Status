@@ -17,7 +17,7 @@
       "name": "Coasters Park",
       "icon": "coasters-park",
       "description": "Rides, queue times and more.",
-      "status": "open",
+      "status": "closed",
       "allDay": false,
       "open": "10:00",
       "close": "19:00",
