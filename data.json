@@ -17,7 +17,7 @@
       "name": "Coasters Park",
       "icon": "coasters-park",
       "description": "",
-      "status": "closed",
+      "status": "engineering",
       "allDay": false,
       "open": "10:00",
       "close": "19:00",
