@@ -89,12 +89,12 @@ window.CWLinks = (() => {
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
 
   // Fills `root` with the buttons. opts.links → the list from data.json (omit to use the original list).
-  // opts.newTab → open links in a new tab (used on /admin so a login isn't lost).
+  // opts.newTab → links open in a new tab (the default); pass newTab:false to open in the same tab.
   function render(root, opts) {
     opts = opts || {};
     const cfg = normalize(opts.links);
     root.innerHTML = "";
-    const tab = a => { if (opts.newTab) { a.target = "_blank"; a.rel = "noopener"; } return a; };
+    const tab = a => { if (opts.newTab !== false) { a.target = "_blank"; a.rel = "noopener"; } return a; };   // always a new tab (also needed when the page is embedded in Google Sites)
     if (cfg.featured && cfg.featured.label) {
       const f = tab(el("a", "cw-feature")); f.href = hrefFor(cfg.featured.href);
       f.appendChild(el("span", "cw-feature-tag", "NEW"));
