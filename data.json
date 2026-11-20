@@ -107,6 +107,18 @@
       "close": "23:00",
       "note": "",
       "reopensAt": ""
+    },
+    {
+      "id": "adventure-park",
+      "name": "Adventure Park",
+      "icon": "adventure-park",
+      "description": "",
+      "status": "open",
+      "allDay": true,
+      "open": "10:00",
+      "close": "18:00",
+      "note": "",
+      "reopensAt": ""
     }
   ],
   "home": {
