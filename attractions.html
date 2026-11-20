@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chungas World — Attractions</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+<header class="park-header">
+  <h1 class="pixel-heading">ATTRACTIONS</h1>
+  <div id="statusPill" class="park-status-pill">Loading…</div>
+</header>
+<div class="admin-shell"><div id="grid" class="att-grid"></div></div>
+
+<script src="config.js?v=1"></script>
+<script src="core.js?v=1"></script>
+<script>
+// Embed options (in the iframe URL):  ?embed=1   ?id=swan-pub  (one attraction)   ?ids=swan-pub,coasters-park
+const q = new URLSearchParams(location.search);
+if (q.get("embed")) document.body.classList.add("embed");
+const only = q.get("id") ? [q.get("id")] : q.get("ids") ? q.get("ids").split(",") : null;
+const grid = document.getElementById("grid"), pill = document.getElementById("statusPill");
+let data;
+
+function render() {
+  let list = data.attractions.filter(a => !only || only.includes(a.id));
+  grid.innerHTML = "";
+  if (!list.length) { grid.innerHTML = '<div class="att-empty">No attractions yet.</div>'; pill.textContent = "—"; return; }
+  let open = 0;
+  list.forEach(a => {
+    const s = CW.status(a); if (s.state === "open") open++;
+    const card = document.createElement("div"); card.className = "att-card"; card.id = a.id;
+    card.appendChild(CW.icon(a));
+    const d = document.createElement("div");
+    d.innerHTML = `<div class="att-name">${CW.esc(a.name)}</div>
+      <span class="att-pill ${s.state}">${CW.esc(s.label)}</span>
+      <div class="att-hours">${CW.esc(s.hours)}</div>
+      ${a.description ? `<div class="att-desc">${CW.esc(a.description)}</div>` : ""}
+      ${s.note ? `<div class="att-note">${CW.esc(s.note)}</div>` : ""}`;
+    card.appendChild(d); grid.appendChild(card);
+  });
+  pill.textContent = `${open} of ${list.length} open`;
+  pill.classList.toggle("closed", open === 0);
+}
+CW.load().then(d => { data = d; render(); setInterval(render, 30000); setInterval(() => CW.load().then(x => { data = x; render(); }), 60000); })
+  .catch(() => { pill.textContent = "Error"; grid.innerHTML = '<div class="att-empty">Couldn’t load attractions.</div>'; });
+</script>
+</body>
+</html>
