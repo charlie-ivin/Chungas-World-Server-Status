@@ -47,6 +47,30 @@
       "close": "18:00",
       "note": "",
       "reopensAt": ""
+    },
+    {
+      "id": "sky-studio-filming-centre",
+      "name": "Sky Studio Filming Centre",
+      "icon": "sky-studio-filming-centre",
+      "description": "",
+      "status": "open",
+      "allDay": false,
+      "open": "10:00",
+      "close": "20:00",
+      "note": "",
+      "reopensAt": ""
+    },
+    {
+      "id": "fun-co-games-hub",
+      "name": "Fun.co Games Hub",
+      "icon": "fun-co-games-hub",
+      "description": "",
+      "status": "open",
+      "allDay": false,
+      "open": "10:00",
+      "close": "18:00",
+      "note": "",
+      "reopensAt": ""
     }
   ]
 }
