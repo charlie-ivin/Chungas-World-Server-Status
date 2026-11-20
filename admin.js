@@ -125,12 +125,13 @@
 
   // Home page settings (saved inside data.json under "home")
   function bindHome() {
-    const H = data.home, map = { homeTitle: "title", homeSub: "subtitle", homeYt: "youtube", homeDim: "dim" };
+    const H = data.home, map = { homeTitle: "title", homeSub: "subtitle", homeVideo: "video", homeYt: "youtube", homeDim: "dim" };
     const check = () => { const raw = H.youtube, id = CWHome.ytId(raw);
+      if (String(H.video || "").trim()) { $("homeYtCheck").textContent = `Playing the video file "${String(H.video).trim()}". The YouTube link is only used if that file is missing.`; return; }
       $("homeYtCheck").textContent = !raw ? "No video set — the page shows a plain dark background." : id ? `Video found (${id}). Make sure the video allows embedding.` : "That doesn't look like a YouTube link."; };
     Object.entries(map).forEach(([elId, key]) => {
       const el = $(elId); el.value = H[key] ?? "";
-      el.oninput = () => { H[key] = key === "dim" ? Math.min(90, Math.max(0, +el.value || 0)) : el.value; if (key === "youtube") check(); };
+      el.oninput = () => { H[key] = key === "dim" ? Math.min(90, Math.max(0, +el.value || 0)) : el.value; if (key === "youtube" || key === "video") check(); };
     });
     check();
   }
