@@ -119,11 +119,24 @@
       "close": "18:00",
       "note": "",
       "reopensAt": ""
+    },
+    {
+      "id": "redstone-college",
+      "name": "Redstone College",
+      "icon": "redstone-college",
+      "description": "",
+      "status": "open",
+      "allDay": false,
+      "open": "07:00",
+      "close": "21:00",
+      "note": "",
+      "reopensAt": ""
     }
   ],
   "home": {
     "title": "Welcome to the\nChungas World Website",
     "subtitle": "\"Chungas World is a ultimate destination for all things fun, interactive, and engaging! Dive into a world of games, stories, and more. Join a community of fans and explore endless entertainment!\"",
+    "video": "background.mp4",
     "youtube": "https://www.youtube.com/watch?v=XtKJbvEQvGA",
     "dim": 25
   },
