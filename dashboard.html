@@ -31,6 +31,15 @@
   .log .l-files { margin: 6px 0 0; padding: 6px 8px; background: #eae4d0; font: 12px/1.5 ui-monospace, Consolas, monospace; word-break: break-all; }
   .tag { font-family: "Press Start 2P", monospace; font-size: 7px; padding: 3px 5px; border: 2px solid var(--ink); background: var(--stone); color: #fff; }
   .tag.admin { background: var(--grass); } .tag.embed { background: var(--sky); color: var(--ink); } .tag.code { background: var(--amber); color: var(--ink); }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tabs .tab { box-shadow: none; background: var(--stone); font-size: 13px; padding: 7px 12px; }
+  .tabs .tab.on { background: var(--grass); }
+  .composer { background: #fffdf5; border: 3px solid var(--stone-dark); padding: 10px; margin-bottom: 12px; }
+  .composer textarea { width: 100%; font: inherit; font-size: 14px; padding: 8px 10px; border: 3px solid var(--ink); background: #fff; resize: vertical; margin: 8px 0; }
+  .composer .field-row { margin: 0; }
+  .l-text { font-size: 14px; margin: 4px 0 0; white-space: pre-wrap; word-break: break-word; font-weight: 500; }
+  .log .del { margin-left: auto; background: none; border: 0; box-shadow: none; color: var(--red); font-weight: 700; padding: 0 4px; cursor: pointer; font-size: 14px; }
+  .tag.note { background: var(--stone); } .tag.maintenance { background: var(--amber); color: var(--ink); } .tag.issue { background: var(--red); } .tag.resolved { background: var(--grass); } .tag.team { background: var(--sky); color: var(--ink); }
   .chip { display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 9px; border: 3px solid var(--ink); background: #fff; }
   .chip.ok { background: #e3f0d8; } .chip.busy { background: #fff1c9; } .chip.bad { background: #fbe0da; }
   .muted { color: var(--stone-dark); font-size: 12px; }
@@ -80,9 +89,28 @@
         <h2>SERVER LOG</h2>
         <div><span id="pagesChip" class="chip" hidden></span> <button id="refreshBtn" class="secondary">Refresh</button></div>
       </div>
-      <p class="muted" id="logMeta">Every change saved to the site (from /admin or GitHub), newest first. Updates every minute.</p>
-      <div id="logMsg"></div>
-      <ul id="log" class="log"></ul>
+      <div class="tabs"><button id="tabTeam" class="tab on" type="button">Team messages</button><button id="tabHist" class="tab" type="button">Change history</button></div>
+
+      <div id="teamView">
+        <div id="composer" class="composer">
+          <div class="field-row">
+            <div class="field"><label for="postType">Type</label>
+              <select id="postType"><option value="note">Note</option><option value="maintenance">Maintenance</option><option value="issue">Issue / outage</option><option value="resolved">Resolved</option></select></div>
+          </div>
+          <textarea id="postText" rows="3" maxlength="1000" placeholder="Write a message for the team…"></textarea>
+          <div class="field-row"><button id="postBtn">Post message</button><span class="muted">Ctrl+Enter to post · everyone on the team sees it</span></div>
+          <div id="postMsg"></div>
+        </div>
+        <p id="readOnlyNote" class="muted" hidden>Your token is read-only, so you can read the team messages but not post. Use a token with "Contents: Read and write" to post.</p>
+        <div id="teamMsg"></div>
+        <ul id="team" class="log"></ul>
+      </div>
+
+      <div id="histView" hidden>
+        <p class="muted">Every change saved to the site (from /admin or GitHub), newest first.</p>
+        <div id="logMsg"></div>
+        <ul id="log" class="log"></ul>
+      </div>
     </section>
   </div>
 </div>
@@ -113,7 +141,7 @@
   const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
 
   // ── Log (the repo's commit history) ──
-  function kind(m) { m = m.toLowerCase(); return m.includes("via admin") ? ["ADMIN", "admin"] : m.includes("embed page") ? ["EMBED", "embed"] : ["CODE", "code"]; }
+  function kind(m) { m = m.toLowerCase(); if (m.startsWith("team log")) return ["TEAM", "team"]; return m.includes("via admin") ? ["ADMIN", "admin"] : m.includes("embed page") ? ["EMBED", "embed"] : ["CODE", "code"]; }
 
   async function loadLog() {
     const r = await fetch(`${API}/commits?sha=${encodeURIComponent(CFG.githubBranch)}&per_page=40`, { headers: hdr() });
@@ -145,6 +173,78 @@
     });
   }
 
+
+  // ── Team messages (stored in log.json in the repo) ──
+  let canWrite = false, me = "someone", entries = [];
+  const b64 = s => { const u = new TextEncoder().encode(s); let t = ""; for (let i = 0; i < u.length; i += 8192) t += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(t); };
+  const unb64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, "")), c => c.charCodeAt(0)));
+  const TYPES = { note: "NOTE", maintenance: "MAINTENANCE", issue: "ISSUE", resolved: "RESOLVED" };
+
+  async function fetchTeam() {
+    const r = await fetch(`${API}/contents/log.json?ref=${encodeURIComponent(CFG.githubBranch)}&_=${Date.now()}`, { headers: hdr(), cache: "no-store" });
+    if (r.status === 404) return { entries: [], sha: null };
+    if (r.status === 401) throw Object.assign(new Error("auth"), { auth: true });
+    if (!r.ok) throw new Error(`GitHub said ${r.status}. The token needs "Contents: Read".`);
+    const f = await r.json(); let d = {}; try { d = JSON.parse(unb64(f.content || "")); } catch (e) {}
+    return { entries: Array.isArray(d.entries) ? d.entries : [], sha: f.sha };
+  }
+
+  async function saveEntries(mutate, commitMsg) {
+    for (let i = 0; i < 2; i++) {
+      const cur = await fetchTeam(), next = mutate(cur.entries.slice());
+      const body = { message: commitMsg, content: b64(JSON.stringify({ entries: next }, null, 2) + "\n"), branch: CFG.githubBranch }; if (cur.sha) body.sha = cur.sha;
+      const r = await fetch(`${API}/contents/log.json`, { method: "PUT", headers: hdr(), body: JSON.stringify(body) });
+      if (r.ok) { entries = next; renderTeam(); return; }
+      if (r.status === 409 || r.status === 422) continue;           // someone saved at the same moment: reload and try again
+      const b = await r.json().catch(() => ({}));
+      throw new Error(r.status === 403 || r.status === 404 ? `GitHub said ${r.status}. This token can't write to the repo (needs "Contents: Read and write").` : `GitHub said ${r.status}: ${b.message || ""}`);
+    }
+    throw new Error("Someone else saved at the same moment. Please press Post again.");
+  }
+
+  function renderTeam() {
+    const ul = $("team"); ul.innerHTML = "";
+    if (!entries.length) { const li = el("li", "", "No messages yet. Post the first one above."); li.className = "muted"; ul.appendChild(li); return; }
+    entries.forEach(e => {
+      const li = el("li"), top = el("div", "l-top"), t = TYPES[e.type] ? e.type : "note";
+      top.appendChild(el("span", "tag " + t, TYPES[t]));
+      top.appendChild(el("span", "", `${when.format(new Date(e.time))} · ${ago(e.time)}`));
+      if (e.avatar && /^https:\/\/avatars\.githubusercontent\.com\//.test(e.avatar)) { const i = el("img"); i.src = e.avatar; i.alt = ""; top.appendChild(i); }
+      top.appendChild(el("span", "", e.author || "unknown"));
+      if (canWrite) {
+        const d = el("button", "del", "✕"); d.type = "button"; d.title = "Delete this message";
+        d.onclick = async () => {
+          if (!confirm("Delete this message for everyone?")) return;
+          d.disabled = true;
+          try { await saveEntries(list => list.filter(x => x.id !== e.id), `Team log: message deleted by ${me}`); } catch (err) { msg($("teamMsg"), err.message); d.disabled = false; }
+        };
+        top.appendChild(d);
+      }
+      li.appendChild(top); li.appendChild(el("div", "l-text", e.text)); ul.appendChild(li);
+    });
+  }
+
+  async function loadTeam() {
+    try { const t = await fetchTeam(); entries = t.entries; msg($("teamMsg"), ""); renderTeam(); }
+    catch (e) { if (e.auth) return logout("Your token was rejected or has expired. Please log in again."); msg($("teamMsg"), e.message); }
+  }
+
+  $("postBtn").onclick = async () => {
+    const text = $("postText").value.trim(); if (!text) return;
+    const entry = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), author: me, avatar: $("userImg").src.startsWith("https://avatars.githubusercontent.com/") ? $("userImg").src.split("&s=")[0] + "&s=40" : "", type: $("postType").value, text };
+    $("postBtn").disabled = true; msg($("postMsg"), "");
+    try { await saveEntries(list => [entry].concat(list), `Team log: ${TYPES[entry.type].toLowerCase()} from ${me}`); $("postText").value = ""; msg($("postMsg"), "Posted.", true); setTimeout(() => msg($("postMsg"), ""), 2500); }
+    catch (e) { msg($("postMsg"), e.message); }
+    $("postBtn").disabled = false;
+  };
+  $("postText").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) $("postBtn").click(); });
+
+  function showTab(team) {
+    $("teamView").hidden = !team; $("histView").hidden = team;
+    $("tabTeam").classList.toggle("on", team); $("tabHist").classList.toggle("on", !team);
+  }
+  $("tabTeam").onclick = () => showTab(true); $("tabHist").onclick = () => showTab(false);
+
   // ── Is the website live? (GitHub Pages build status) ──
   async function loadPages() {
     const chip = $("pagesChip");
@@ -160,7 +260,7 @@
 
   async function refresh() {
     $("refreshBtn").disabled = true;
-    try { await Promise.all([loadLog(), loadPages()]); } catch (e) { msg($("logMsg"), "Network error contacting GitHub."); }
+    try { await Promise.all([loadTeam(), loadLog(), loadPages()]); } catch (e) { msg($("logMsg"), "Network error contacting GitHub."); }
     $("refreshBtn").disabled = false;
   }
   $("refreshBtn").onclick = refresh;
@@ -171,19 +271,20 @@
     try {
       const r = await fetch(API, { headers: { Authorization: `Bearer ${v}`, Accept: "application/vnd.github+json" } }), b = await r.json().catch(() => ({}));
       if (!r.ok) return msg($("loginMsg"), `GitHub said ${r.status}: ${b.message || "no message"}. Check the token and that it is for this repo.`);
-      token = v; if (remember) sessionStorage.setItem(KEY, v); else sessionStorage.removeItem(KEY);
+      token = v; canWrite = !!(b.permissions && b.permissions.push); if (remember) sessionStorage.setItem(KEY, v); else sessionStorage.removeItem(KEY);
       $("tokenInput").value = "";
       $("loginPanel").hidden = true; $("main").hidden = false; $("logoutBtn").hidden = false;
       $("loginState").textContent = "Logged in"; $("loginState").classList.add("extended");
       $("attFrame").src = "attractions.html?embed=1";
-      try { const u = await (await fetch("https://api.github.com/user", { headers: hdr() })).json(); if (u.login) { $("userName").textContent = u.login; $("userImg").src = u.avatar_url + "&s=52"; $("userPill").hidden = false; } } catch (e) {}
+      try { const u = await (await fetch("https://api.github.com/user", { headers: hdr() })).json(); if (u.login) { me = u.login; $("userName").textContent = u.login; $("userImg").src = u.avatar_url + "&s=52"; $("userPill").hidden = false; } } catch (e) {}
+      $("composer").hidden = !canWrite; $("readOnlyNote").hidden = canWrite; showTab(true);
       refresh(); clearInterval(timer); timer = setInterval(refresh, 60000);
     } catch (e) { msg($("loginMsg"), "Network error contacting GitHub."); }
   }
   function logout(why) {
     token = null; sessionStorage.removeItem(KEY); clearInterval(timer);
     $("main").hidden = true; $("loginPanel").hidden = false; $("logoutBtn").hidden = true; $("userPill").hidden = true;
-    $("attFrame").removeAttribute("src"); $("log").innerHTML = "";
+    $("attFrame").removeAttribute("src"); $("log").innerHTML = ""; $("team").innerHTML = ""; entries = [];
     $("loginState").textContent = "Not logged in"; $("loginState").classList.remove("extended");
     msg($("loginMsg"), typeof why === "string" ? why : "");
   }
