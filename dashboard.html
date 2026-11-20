@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chungas World — Dashboard</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="stylesheet" href="style.css?v=3" />
+<style>
+  .hdr-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .clock { text-align: right; line-height: 1.15; color: #fff; }
+  .clock b { display: block; font-family: "Press Start 2P", monospace; font-size: 18px; font-weight: 400; color: var(--gold); text-shadow: 2px 2px 0 var(--ink); letter-spacing: 1px; }
+  .clock small { font-size: 12px; font-weight: 600; opacity: .9; }
+  .dash-shell { max-width: 1600px; margin: 0 auto; padding: 18px; }
+  .dash { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .dash .panel { margin: 0; }
+  .panel h2 .sub { font-family: Inter, sans-serif; font-weight: 600; font-size: 12px; margin-left: 8px; opacity: .75; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .panel-head h2 { margin: 0; }
+  .att-frame { display: block; width: 100%; height: calc(100vh - 210px); min-height: 480px; border: 4px solid var(--stone-dark); background: var(--ink); }
+  .log { list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 250px); min-height: 300px; overflow-y: auto; }
+  .log li { border-bottom: 2px solid #ddd6c4; padding: 9px 4px; }
+  .log li:last-child { border-bottom: 0; }
+  .log .l-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; font-weight: 600; color: var(--stone-dark); }
+  .log .l-top img { width: 20px; height: 20px; border: 2px solid var(--ink); image-rendering: auto; }
+  .log .l-msg { font-size: 14px; font-weight: 700; margin: 3px 0 2px; word-break: break-word; }
+  .log .l-act { font-size: 12px; }
+  .log .l-act a { color: var(--stone-dark); }
+  .log button.link { background: none; border: 0; box-shadow: none; padding: 0; color: var(--stone-dark); text-decoration: underline; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .log .l-files { margin: 6px 0 0; padding: 6px 8px; background: #eae4d0; font: 12px/1.5 ui-monospace, Consolas, monospace; word-break: break-all; }
+  .tag { font-family: "Press Start 2P", monospace; font-size: 7px; padding: 3px 5px; border: 2px solid var(--ink); background: var(--stone); color: #fff; }
+  .tag.admin { background: var(--grass); } .tag.embed { background: var(--sky); color: var(--ink); } .tag.code { background: var(--amber); color: var(--ink); }
+  .chip { display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 9px; border: 3px solid var(--ink); background: #fff; }
+  .chip.ok { background: #e3f0d8; } .chip.busy { background: #fff1c9; } .chip.bad { background: #fbe0da; }
+  .muted { color: var(--stone-dark); font-size: 12px; }
+  .login-wrap { max-width: 640px; margin: 0 auto; }
+  .login-wrap input[type=password] { width: 100%; max-width: 420px; }
+  .user-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #fff; }
+  .user-pill img { width: 26px; height: 26px; border: 2px solid var(--ink); }
+  [hidden] { display: none !important; }
+  @media (max-width: 1000px) { .dash { grid-template-columns: 1fr; } .att-frame { height: 70vh; } .log { max-height: 60vh; } }
+</style>
+</head>
+<body>
+<header class="park-header">
+  <h1 class="pixel-heading">DASHBOARD</h1>
+  <div class="hdr-right">
+    <div class="clock"><b id="clockTime">--:--:--</b><small id="clockDate"></small></div>
+    <span id="userPill" class="user-pill" hidden><img id="userImg" alt="" /><span id="userName"></span></span>
+    <div id="loginState" class="park-status-pill">Not logged in</div>
+    <button id="logoutBtn" class="secondary" hidden>Log out</button>
+  </div>
+</header>
+
+<div class="dash-shell">
+  <div id="loginPanel" class="panel login-wrap">
+    <h2>LOG IN WITH GITHUB</h2>
+    <p>Use your GitHub personal access token (the same one you use for <a href="admin.html">/admin</a> works). A read-only token is enough here: <b>this repo only</b>, <b>Contents: Read</b>, and optionally <b>Pages: Read</b> so the dashboard can show whether the website is live. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token</a></p>
+    <div class="field-row">
+      <div class="field"><label for="tokenInput">Personal access token</label>
+        <input id="tokenInput" type="password" placeholder="github_pat_..." autocomplete="off" /></div>
+      <button id="loginBtn">Log in</button>
+    </div>
+    <label class="muted"><input type="checkbox" id="stay" checked /> Stay logged in until I close this tab</label>
+    <div id="loginMsg"></div>
+  </div>
+
+  <div id="main" class="dash" hidden>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>ATTRACTIONS</h2>
+        <a class="muted" href="attractions.html" target="_blank" rel="noopener">Open full page ↗</a>
+      </div>
+      <iframe id="attFrame" class="att-frame" title="Attractions" loading="lazy"></iframe>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>SERVER LOG</h2>
+        <div><span id="pagesChip" class="chip" hidden></span> <button id="refreshBtn" class="secondary">Refresh</button></div>
+      </div>
+      <p class="muted" id="logMeta">Every change saved to the site (from /admin or GitHub), newest first. Updates every minute.</p>
+      <div id="logMsg"></div>
+      <ul id="log" class="log"></ul>
+    </section>
+  </div>
+</div>
+
+<script src="config.js?v=1"></script>
+<script>
+(() => {
+  const CFG = CW_CONFIG, API = `https://api.github.com/repos/${CFG.githubOwner}/${CFG.githubRepo}`, KEY = "cw_dash_token";
+  const $ = id => document.getElementById(id);
+  let token = null, timer = null;
+  const hdr = () => ({ Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" });
+  const msg = (el, t, ok) => { el.innerHTML = ""; if (!t) return; const d = document.createElement("div"); d.className = "msg " + (ok ? "ok" : "error"); d.textContent = t; el.appendChild(d); };
+
+  // ── Clock (UK time, like the rest of the site) ──
+  const tf = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  const df = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const zf = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", timeZoneName: "short" });
+  const tick = () => { const d = new Date(), z = zf.formatToParts(d).find(p => p.type === "timeZoneName"); $("clockTime").textContent = tf.format(d); $("clockDate").textContent = `${df.format(d)} · UK time${z ? " (" + z.value + ")" : ""}`; };
+  tick(); setInterval(tick, 1000);
+
+  // ── Helpers ──
+  const when = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  function ago(iso) {
+    const s = Math.max(0, (Date.now() - new Date(iso)) / 1000);
+    if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + " min ago";
+    if (s < 86400) return Math.floor(s / 3600) + " h ago"; return Math.floor(s / 86400) + " d ago";
+  }
+  const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
+
+  // ── Log (the repo's commit history) ──
+  function kind(m) { m = m.toLowerCase(); return m.includes("via admin") ? ["ADMIN", "admin"] : m.includes("embed page") ? ["EMBED", "embed"] : ["CODE", "code"]; }
+
+  async function loadLog() {
+    const r = await fetch(`${API}/commits?sha=${encodeURIComponent(CFG.githubBranch)}&per_page=40`, { headers: hdr() });
+    if (r.status === 401) { logout("Your token was rejected or has expired. Please log in again."); return; }
+    if (!r.ok) { msg($("logMsg"), `Couldn't load the log (GitHub said ${r.status}). The token needs "Contents: Read".`); return; }
+    msg($("logMsg"), "");
+    const list = await r.json(), ul = $("log"); ul.innerHTML = "";
+    if (!list.length) ul.appendChild(el("li", "", "Nothing logged yet."));
+    list.forEach(c => {
+      const li = el("li"), top = el("div", "l-top"), m = (c.commit.message || "").split("\n")[0], [t, cls] = kind(m);
+      top.appendChild(el("span", "tag " + cls, t));
+      const date = c.commit.author && c.commit.author.date;
+      top.appendChild(el("span", "", date ? `${when.format(new Date(date))} · ${ago(date)}` : ""));
+      if (c.author && c.author.avatar_url) { const i = el("img"); i.src = c.author.avatar_url + "&s=40"; i.alt = ""; top.appendChild(i); }
+      top.appendChild(el("span", "", (c.author && c.author.login) || (c.commit.author && c.commit.author.name) || "unknown"));
+      li.appendChild(top); li.appendChild(el("div", "l-msg", m || "(no message)"));
+      const act = el("div", "l-act"), a = el("a", "", c.sha.slice(0, 7)); a.href = c.html_url; a.target = "_blank"; a.rel = "noopener";
+      const b = el("button", "link", "details"); b.type = "button"; let box = null;
+      b.onclick = async () => {
+        if (box) { box.hidden = !box.hidden; return; }
+        box = el("div", "l-files", "Loading…"); li.appendChild(box);
+        try {
+          const d = await (await fetch(`${API}/commits/${c.sha}`, { headers: hdr() })).json();
+          box.textContent = (d.files || []).map(f => `${f.status.padEnd(9)} ${f.filename}  (+${f.additions} −${f.deletions})`).join("\n") || "No file details.";
+          box.style.whiteSpace = "pre-wrap";
+        } catch (e) { box.textContent = "Couldn't load details."; }
+      };
+      act.appendChild(a); act.appendChild(document.createTextNode(" · ")); act.appendChild(b); li.appendChild(act); ul.appendChild(li);
+    });
+  }
+
+  // ── Is the website live? (GitHub Pages build status) ──
+  async function loadPages() {
+    const chip = $("pagesChip");
+    try {
+      const r = await fetch(`${API}/pages/builds/latest`, { headers: hdr() });
+      if (!r.ok) { chip.hidden = true; return; }
+      const b = await r.json(); chip.hidden = false; chip.className = "chip";
+      if (b.status === "built") { chip.classList.add("ok"); chip.textContent = `Website live · updated ${ago(b.updated_at)}`; }
+      else if (b.status === "errored") { chip.classList.add("bad"); chip.textContent = "Website publish error"; chip.title = (b.error && b.error.message) || ""; }
+      else { chip.classList.add("busy"); chip.textContent = "Publishing changes…"; }
+    } catch (e) { chip.hidden = true; }
+  }
+
+  async function refresh() {
+    $("refreshBtn").disabled = true;
+    try { await Promise.all([loadLog(), loadPages()]); } catch (e) { msg($("logMsg"), "Network error contacting GitHub."); }
+    $("refreshBtn").disabled = false;
+  }
+  $("refreshBtn").onclick = refresh;
+
+  // ── Login / logout ──
+  async function login(v, remember) {
+    msg($("loginMsg"), "");
+    try {
+      const r = await fetch(API, { headers: { Authorization: `Bearer ${v}`, Accept: "application/vnd.github+json" } }), b = await r.json().catch(() => ({}));
+      if (!r.ok) return msg($("loginMsg"), `GitHub said ${r.status}: ${b.message || "no message"}. Check the token and that it is for this repo.`);
+      token = v; if (remember) sessionStorage.setItem(KEY, v); else sessionStorage.removeItem(KEY);
+      $("tokenInput").value = "";
+      $("loginPanel").hidden = true; $("main").hidden = false; $("logoutBtn").hidden = false;
+      $("loginState").textContent = "Logged in"; $("loginState").classList.add("extended");
+      $("attFrame").src = "attractions.html?embed=1";
+      try { const u = await (await fetch("https://api.github.com/user", { headers: hdr() })).json(); if (u.login) { $("userName").textContent = u.login; $("userImg").src = u.avatar_url + "&s=52"; $("userPill").hidden = false; } } catch (e) {}
+      refresh(); clearInterval(timer); timer = setInterval(refresh, 60000);
+    } catch (e) { msg($("loginMsg"), "Network error contacting GitHub."); }
+  }
+  function logout(why) {
+    token = null; sessionStorage.removeItem(KEY); clearInterval(timer);
+    $("main").hidden = true; $("loginPanel").hidden = false; $("logoutBtn").hidden = true; $("userPill").hidden = true;
+    $("attFrame").removeAttribute("src"); $("log").innerHTML = "";
+    $("loginState").textContent = "Not logged in"; $("loginState").classList.remove("extended");
+    msg($("loginMsg"), typeof why === "string" ? why : "");
+  }
+  $("loginBtn").onclick = () => { const v = $("tokenInput").value.trim(); if (v) login(v, $("stay").checked); };
+  $("tokenInput").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+  $("logoutBtn").onclick = () => logout();
+  const saved = sessionStorage.getItem(KEY); if (saved) login(saved, true);
+})();
+</script>
+</body>
+</html>
