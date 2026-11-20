@@ -90,5 +90,164 @@
     "subtitle": "\"Chungas World is a ultimate destination for all things fun, interactive, and engaging! Dive into a world of games, stories, and more. Join a community of fans and explore endless entertainment!\"",
     "youtube": "https://www.youtube.com/watch?v=IdvYvZFMIrQ",
     "dim": 25
+  },
+  "links": {
+    "featured": null,
+    "groups": [
+      {
+        "title": "Parks & Attractions",
+        "links": [
+          {
+            "label": "Coasters Park",
+            "path": "/coasters-park"
+          },
+          {
+            "label": "Adventure Park",
+            "path": "/adventure-park"
+          },
+          {
+            "label": "Sky Studio Centre",
+            "path": "/sky-studio-filming-centre"
+          },
+          {
+            "label": "Minecraft Polmanter Recreation",
+            "path": "/polmanter-recreation"
+          },
+          {
+            "label": "The Eclipse Club",
+            "path": "/the-eclipse-club"
+          },
+          {
+            "label": "Tours Attraction",
+            "path": "/tours-attraction"
+          },
+          {
+            "label": "Minecraft Karens Diner",
+            "path": "/m-karens-diner"
+          },
+          {
+            "label": "Minecraft Tretho Lounge",
+            "path": "/tretho-lounge"
+          },
+          {
+            "label": "Minecraft PDC Darts",
+            "path": "/minecraft-pdc-darts"
+          },
+          {
+            "label": "Fun.co Games Hub",
+            "path": "/fun-co-games-hub"
+          },
+          {
+            "label": "Chungas Building Hire",
+            "path": "/building-hire"
+          }
+        ]
+      },
+      {
+        "title": "Education",
+        "links": [
+          {
+            "label": "Main School",
+            "path": "/education/main-school"
+          },
+          {
+            "label": "Redstone College",
+            "path": "/education/redstone-college"
+          }
+        ]
+      },
+      {
+        "title": "Info & Community",
+        "links": [
+          {
+            "label": "World Access / How To Join",
+            "path": "/info/world-access"
+          },
+          {
+            "label": "About Chungas World",
+            "path": "/info/about-chungas-world"
+          },
+          {
+            "label": "Chungas World Jobs",
+            "path": "/info/jobs-at-chungas-world"
+          },
+          {
+            "label": "Chungas World News",
+            "path": "/info/news-hub"
+          },
+          {
+            "label": "Chungas World Blogs",
+            "path": "/blog"
+          },
+          {
+            "label": "Frequently Asked Questions",
+            "path": "/info/faq-hub"
+          },
+          {
+            "label": "World Map",
+            "path": "/world-map"
+          },
+          {
+            "label": "Meet The Team",
+            "path": "/meet-the-team"
+          }
+        ]
+      },
+      {
+        "title": "Online Info",
+        "links": [
+          {
+            "label": "CW Discord Access & Parents Info",
+            "path": "/online-info/discord-access"
+          },
+          {
+            "label": "Server Outages",
+            "path": "/online-info/server-outages"
+          },
+          {
+            "label": "Website Copyright",
+            "path": "/online-info/website-copyright"
+          }
+        ]
+      },
+      {
+        "title": "Government",
+        "links": [
+          {
+            "label": "Planning Request",
+            "path": "/gov/planning-request"
+          },
+          {
+            "label": "Building Materials",
+            "path": "/gov/building-materials"
+          },
+          {
+            "label": "Chungas World EBill",
+            "path": "/gov/ebill"
+          },
+          {
+            "label": "World Fire Tests",
+            "path": "/gov/fire-tests"
+          },
+          {
+            "label": "GOVERNMENT PARK OFFICE",
+            "path": "/gov/gov-park"
+          }
+        ]
+      },
+      {
+        "title": "Contact & Policies",
+        "links": [
+          {
+            "label": "Contact Us",
+            "path": "/contact"
+          },
+          {
+            "label": "All Chungas World Policies",
+            "path": "/policies"
+          }
+        ]
+      }
+    ]
   }
 }
