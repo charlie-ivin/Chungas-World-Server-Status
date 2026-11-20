@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chungas World</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="stylesheet" href="style.css?v=1" />
+<link rel="stylesheet" href="home.css?v=1" />
+</head>
+<body>
+<div class="bg"><div id="video"></div><div class="dim" id="dim"></div></div>
+
+<main class="hero">
+  <div>
+    <h1 id="heroTitle"></h1>
+    <p id="heroSub"></p>
+  </div>
+</main>
+
+<aside class="side">
+  <div class="side-head">
+    <h2 class="pixel-heading">ATTRACTIONS</h2>
+    <div id="openPill" class="park-status-pill">…</div>
+  </div>
+  <div id="list"></div>
+</aside>
+
+<script src="config.js?v=1"></script>
+<script src="core.js?v=1"></script>
+<script src="home.js?v=1"></script>
+<script>
+const $ = id => document.getElementById(id);
+let data, curYt = null;
+
+function renderHome() {
+  const h = CWHome.withDefaults(data.home);
+  $("heroTitle").textContent = h.title;
+  $("heroSub").textContent = h.subtitle;
+  $("dim").style.opacity = Math.min(90, Math.max(0, +h.dim || 0)) / 100;
+  const id = CWHome.ytId(h.youtube);
+  if (id !== curYt) {                       // only touch the video if the link changed
+    curYt = id;
+    $("video").innerHTML = id ? `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1" allow="autoplay; encrypted-media" tabindex="-1" aria-hidden="true"></iframe>` : "";
+  }
+}
+
+function renderList() {
+  const list = $("list"); list.innerHTML = "";
+  if (!data.attractions.length) { list.innerHTML = '<div class="att-empty">No attractions yet.</div>'; $("openPill").textContent = "—"; return; }
+  let open = 0;
+  data.attractions.forEach(a => {
+    const s = CW.status(a); if (s.state === "open") open++;
+    const card = document.createElement("div"); card.className = "att-card"; card.id = a.id;
+    card.appendChild(CW.icon(a));
+    const d = document.createElement("div");
+    d.innerHTML = `<div class="att-name">${CW.esc(a.name)}</div>
+      <span class="att-pill ${s.state}">${CW.esc(s.label)}</span>
+      <div class="att-hours">${CW.esc(s.hours)}</div>
+      ${s.note ? `<div class="att-note">${CW.esc(s.note)}</div>` : ""}`;
+    card.appendChild(d); list.appendChild(card);
+  });
+  $("openPill").textContent = `${open} of ${data.attractions.length} open`;
+  $("openPill").classList.toggle("closed", open === 0);
+}
+
+const refresh = () => CW.load().then(d => { data = d; renderHome(); renderList(); });
+refresh().then(() => { setInterval(renderList, 30000); setInterval(refresh, 60000); })
+  .catch(() => { $("openPill").textContent = "Error"; $("list").innerHTML = '<div class="att-empty">Couldn’t load attractions.</div>'; });
+</script>
+</body>
+</html>
