@@ -6,7 +6,7 @@
 <title>Attractions Admin</title>
 <meta name="robots" content="noindex" />
 <link rel="icon" type="image/png" href="favicon.png" />
-<link rel="stylesheet" href="style.css?v=1" />
+<link rel="stylesheet" href="style.css?v=2" />
 <style>textarea{font:inherit;font-size:14px;padding:8px 10px;border:3px solid var(--ink);background:#fff}</style>
 </head>
 <body>
@@ -56,9 +56,16 @@
     </div>
   </div>
 </div>
+
+<div class="admin-shell site-links">
+  <h2 class="pixel-heading">CHUNGAS WORLD LINKS</h2>
+  <div class="cw-links" id="cwLinks"></div>
+</div>
 <script src="config.js?v=1"></script>
 <script src="core.js?v=1"></script>
 <script src="home.js?v=1"></script>
+<script src="links.js?v=1"></script>
+<script>CWLinks.render(document.getElementById("cwLinks"), { newTab: true });</script>
 <script src="admin.js?v=3"></script>
 </body>
 </html>
