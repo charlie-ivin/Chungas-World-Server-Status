@@ -83,6 +83,30 @@
       "close": "19:00",
       "note": "",
       "reopensAt": ""
+    },
+    {
+      "id": "minecraft-karens-diner",
+      "name": "Minecraft Karens Diner",
+      "icon": "minecraft-karens-diner",
+      "description": "",
+      "status": "open",
+      "allDay": false,
+      "open": "07:00",
+      "close": "23:00",
+      "note": "",
+      "reopensAt": ""
+    },
+    {
+      "id": "minecraft-tretho-lounge",
+      "name": "Minecraft Tretho Lounge",
+      "icon": "minecraft-tretho-lounge",
+      "description": "",
+      "status": "open",
+      "allDay": false,
+      "open": "07:00",
+      "close": "23:00",
+      "note": "",
+      "reopensAt": ""
     }
   ],
   "home": {
