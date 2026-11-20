@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Attractions Admin</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+<header class="park-header">
+  <h1 class="pixel-heading">ATTRACTIONS ADMIN</h1>
+  <div id="loginState" class="park-status-pill">Not logged in</div>
+</header>
+<div class="admin-shell">
+  <div id="loginPanel" class="panel">
+    <h2>LOG IN</h2>
+    <p>Log in with your GitHub personal access token (fine-grained, this repo only, Contents: read and write). GitHub no longer accepts account passwords for this.</p>
+    <div class="field-row">
+      <div class="field"><label for="tokenInput">Personal access token</label>
+        <input id="tokenInput" type="password" placeholder="github_pat_..." style="width:320px" /></div>
+      <button id="loginBtn">Log in</button>
+    </div>
+    <div id="loginMsg"></div>
+  </div>
+
+  <div id="adminMain" style="display:none">
+    <div class="panel">
+      <h2>ATTRACTIONS</h2>
+      <p>Icons: put image files in the <code>cw-icons</code> folder of this repo (e.g. <code>cw-icons/the-swan-pub.png</code>) and type the file name (no extension) in <b>Icon</b>.</p>
+      <div id="list"></div>
+      <button id="addBtn">+ Add attraction</button>
+    </div>
+    <div class="panel">
+      <h2>SAVE</h2>
+      <p>Changes stay local until you save. This commits <code id="dataPathLabel"></code> to <code id="repoLabel"></code>.</p>
+      <button id="saveBtn">Save changes to GitHub</button>
+      <div id="saveMsg"></div>
+    </div>
+  </div>
+</div>
+<script src="config.js?v=1"></script>
+<script src="core.js?v=1"></script>
+<script src="admin.js?v=1"></script>
+</body>
+</html>

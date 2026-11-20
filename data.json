@@ -1,0 +1,28 @@
+{
+  "attractions": [
+    {
+      "id": "swan-pub",
+      "name": "The Swan Pub",
+      "icon": "the-swan-pub",
+      "description": "Grab a drink and a bite at the server's pub.",
+      "status": "open",
+      "allDay": false,
+      "open": "10:00",
+      "close": "22:00",
+      "note": "",
+      "reopensAt": ""
+    },
+    {
+      "id": "coasters-park",
+      "name": "Coasters Park",
+      "icon": "coasters-park",
+      "description": "Rides, queue times and more.",
+      "status": "open",
+      "allDay": false,
+      "open": "10:00",
+      "close": "19:00",
+      "note": "",
+      "reopensAt": ""
+    }
+  ]
+}
