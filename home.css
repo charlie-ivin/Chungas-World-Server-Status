@@ -14,8 +14,8 @@ body { margin: 0; background: #1c1c19; overflow: hidden; }
 /* Text in the middle (of the space left of the attractions column) */
 .hero { position: relative; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; text-align: center; padding: 24px 40px 64px; }
 .hero > div { width: 100%; max-width: 1280px; }
-.hero h1 { font-family: Anton, Impact, "Arial Narrow Bold", sans-serif; font-weight: 400; font-size: clamp(2.6rem, 6.6vw, 6.6rem); line-height: 1.15; letter-spacing: 1.5px; margin: 0 0 1em; white-space: pre-line; text-wrap: balance; text-shadow: 0 3px 12px rgba(0,0,0,.55); }
-.hero p { font: italic 700 clamp(1rem, 1.55vw, 1.4rem)/1.55 Arial, Helvetica, sans-serif; max-width: 1080px; margin: 0 auto; white-space: pre-line; text-wrap: pretty; text-shadow: 0 2px 6px rgba(0,0,0,.7); }
+.hero h1 { font-family: Anton, Impact, "Arial Narrow Bold", sans-serif; font-weight: 400; font-size: clamp(2.2rem, 4.8vw, 5.8rem); line-height: 1.37; letter-spacing: 0; margin: 0 0 .65em; white-space: pre-line; text-wrap: balance; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.hero p { font: italic 700 clamp(.95rem, 1.05vw, 1.3rem)/1.4 Arial, Helvetica, sans-serif; max-width: 1010px; margin: 0 auto; white-space: pre-line; text-wrap: pretty; text-shadow: 0 2px 6px rgba(0,0,0,.7); }
 .hero-more { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); font-family: "Press Start 2P", monospace; font-size: 10px; color: var(--gold); text-decoration: none; text-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
 .hero-more:hover { color: #fff; }
 
@@ -24,16 +24,19 @@ body { margin: 0; background: #1c1c19; overflow: hidden; }
 .links > h2 { font-size: 14px; color: var(--gold); margin: 0 0 20px; text-shadow: 2px 2px 0 var(--ink); text-align: center; }
 .links .cw-links { background: rgba(28,28,25,.55); border: 4px solid var(--stone-dark); padding: 22px; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 
-/* Attractions down the right side */
-.side { position: fixed; top: 0; right: 0; bottom: 0; width: var(--side); z-index: 2; overflow-y: auto; padding: 14px; background: rgba(28,28,25,.78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border-left: 6px solid var(--stone-dark); }
-.side-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+/* Attractions down the right side: always fully in view. The cards share the height; the page script (fitList) shrinks --k if they still don't fit */
+.side { position: fixed; top: 0; right: 0; bottom: 0; width: var(--side); z-index: 2; display: flex; flex-direction: column; overflow: hidden; padding: 12px; box-sizing: border-box; background: rgba(28,28,25,.78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border-left: 6px solid var(--stone-dark); }
+.side-head { flex: none; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 .side-head h2 { font-size: 12px; color: var(--gold); margin: 0; text-shadow: 2px 2px 0 var(--ink); }
 .side-head .park-status-pill { font-size: 8px; padding: 6px 8px; }
-#list { display: flex; flex-direction: column; gap: 12px; }
-.side .att-card { padding: 10px; gap: 10px; box-shadow: 3px 3px 0 rgba(0,0,0,.45); }
-.side .att-ico { width: 56px; height: 56px; font-size: 16px; }
-.side .att-name { font-size: 14px; margin-bottom: 4px; }
-.side .att-hours { font-size: 12px; }
+#list { --k: 1; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: calc(10px * var(--k)); overflow-y: auto; scrollbar-width: none; }
+#list::-webkit-scrollbar { display: none; }
+.side .att-card { flex: 1 0 auto; align-items: center; padding: calc(9px * var(--k)); gap: calc(10px * var(--k)); box-shadow: 3px 3px 0 rgba(0,0,0,.45); }
+.side .att-ico { width: calc(56px * var(--k)); height: calc(56px * var(--k)); font-size: calc(16px * var(--k)); border-width: 2px; }
+.side .att-name { font-size: calc(14px * var(--k)); line-height: 1.2; margin-bottom: calc(4px * var(--k)); }
+.side .att-pill { font-size: calc(8px * var(--k)); padding: calc(5px * var(--k)) calc(7px * var(--k)); border-width: 2px; }
+.side .att-hours { font-size: calc(12px * var(--k)); line-height: 1.25; margin-top: calc(3px * var(--k)); }
+.side .att-note { font-size: calc(11px * var(--k)); margin-top: calc(2px * var(--k)); }
 
 /* Gallery */
 .gallery[hidden] { display: none; }
@@ -50,5 +53,7 @@ body { margin: 0; background: #1c1c19; overflow: hidden; }
   .links { padding: 32px 16px 40px; }
   .links .cw-links { padding: 14px; }
   .cw-btns { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-  .side { position: relative; width: auto; border-left: 0; border-top: 6px solid var(--stone-dark); }
+  .side { position: relative; width: auto; display: block; overflow: visible; border-left: 0; border-top: 6px solid var(--stone-dark); }
+  #list { overflow: visible; }
+  .side .att-card { flex: none; }
 }
