@@ -1,6 +1,6 @@
 (() => {
   const CFG = CW_CONFIG, API = `https://api.github.com/repos/${CFG.githubOwner}/${CFG.githubRepo}`;
-  let token = null, data = { attractions: [] };
+  let token = null, data = { attractions: [], links: null };
   const $ = id => document.getElementById(id);
   $("repoLabel").textContent = `${CFG.githubOwner}/${CFG.githubRepo}`; $("dataPathLabel").textContent = CFG.dataPath;
   const msg = (el, t, ok) => el.innerHTML = `<div class="msg ${ok ? "ok" : "error"}">${CW.esc(t)}</div>`;
@@ -13,7 +13,7 @@
       if (!b.permissions || !b.permissions.push) return msg($("loginMsg"), "Token works but has no write access to this repo.");
       token = v; $("tokenInput").value = ""; $("loginPanel").style.display = "none"; $("adminMain").style.display = "block";
       $("loginState").textContent = "Logged in"; $("loginState").classList.add("extended");
-      data = await CW.load(); data.home = CWHome.withDefaults(data.home); bindHome(); render();
+      data = await CW.load(); data.home = CWHome.withDefaults(data.home); data.links = CWLinks.normalize(data.links); bindHome(); render(); renderLinks();
     } catch (e) { msg($("loginMsg"), "Network error contacting GitHub."); }
   };
 
@@ -52,6 +52,69 @@
       list.appendChild(el);
     });
   }
+
+
+  // ── "Explore Chungas World" links (saved inside data.json under "links") ──
+  const ea = (s) => CW.esc(s);                       // escape for HTML attributes
+  const refreshPreview = () => CWLinks.render($("cwLinks"), { newTab: true, links: data.links });
+  const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return false; [arr[i], arr[j]] = [arr[j], arr[i]]; return true; };
+
+  function renderLinks() {
+    const L = data.links, root = $("linksEditor"); root.innerHTML = "";
+
+    // NEW banner
+    const fe = document.createElement("div"); fe.className = "att-admin";
+    const f = L.featured;
+    fe.innerHTML = `<h3>NEW banner (the gold bar at the top)</h3>
+      <div class="field-row"><div class="field"><label><input type="checkbox" data-f="on" ${f ? "checked" : ""}> Show the banner</label></div></div>
+      ${f ? `<div class="field-row">
+        ${field("Banner text", `<input data-f="label" value="${ea(f.label)}" style="width:440px;max-width:100%">`)}
+        ${field("Link <small>(full https:// address)</small>", `<input data-f="href" value="${ea(f.href)}" style="width:440px;max-width:100%">`)}
+      </div>` : ""}`;
+    fe.querySelector('[data-f="on"]').onchange = e => { L.featured = e.target.checked ? (L._f || { label: "", href: "" }) : (L._f = L.featured, null); renderLinks(); refreshPreview(); };
+    fe.querySelectorAll('[data-f="label"],[data-f="href"]').forEach(inp => inp.oninput = () => { L.featured[inp.dataset.f === "href" ? "href" : "label"] = inp.value; refreshPreview(); });
+    root.appendChild(fe);
+
+    // Sections
+    L.groups.forEach((g, gi) => {
+      const el = document.createElement("div"); el.className = "att-admin";
+      el.innerHTML = `<h3>${CW.esc(g.title || "New section")}</h3>
+        <div class="field-row">
+          ${field("Section title", `<input data-g="title" value="${ea(g.title)}">`)}
+          <button class="secondary" data-gact="up">↑</button><button class="secondary" data-gact="down">↓</button><button class="danger" data-gact="del">Delete section</button>
+        </div>
+        <div class="lk-list"></div>
+        <div class="field-row"><button data-gact="add">+ Add link</button></div>`;
+      el.querySelector('[data-g="title"]').oninput = e => { g.title = e.target.value; el.querySelector("h3").textContent = g.title || "New section"; refreshPreview(); };
+      el.querySelectorAll("[data-gact]").forEach(b => b.onclick = () => {
+        const act = b.dataset.gact;
+        if (act === "del") { if (!confirm(`Delete the section "${g.title}" and its ${g.links.length} link(s)?`)) return; L.groups.splice(gi, 1); }
+        else if (act === "add") g.links.push({ label: "", path: "" });
+        else if (!move(L.groups, gi, act === "up" ? -1 : 1)) return;
+        renderLinks(); refreshPreview();
+      });
+      const lk = el.querySelector(".lk-list");
+      g.links.forEach((l, li) => {
+        const row = document.createElement("div"); row.className = "field-row";
+        row.innerHTML = `${field("Button text", `<input data-l="label" value="${ea(l.label)}" style="width:250px;max-width:100%">`)}
+          ${field("Link <small>(/page or https://…)</small>", `<input data-l="path" value="${ea(l.path)}" style="width:300px;max-width:100%">`)}
+          <button class="secondary" data-lact="up">↑</button><button class="secondary" data-lact="down">↓</button><button class="danger" data-lact="del">✕</button>`;
+        row.querySelectorAll("[data-l]").forEach(inp => inp.oninput = () => { l[inp.dataset.l] = inp.value; refreshPreview(); });
+        row.querySelectorAll("[data-lact]").forEach(b => b.onclick = () => {
+          const act = b.dataset.lact;
+          if (act === "del") g.links.splice(li, 1);
+          else if (!move(g.links, li, act === "up" ? -1 : 1)) return;
+          renderLinks(); refreshPreview();
+        });
+        lk.appendChild(row);
+      });
+      root.appendChild(el);
+    });
+    refreshPreview();
+  }
+
+  $("addGroupBtn").onclick = () => { const t = prompt("Section title?"); if (!t) return; data.links.groups.push({ title: t, links: [{ label: "", path: "" }] }); renderLinks(); };
+  $("resetLinksBtn").onclick = () => { if (!confirm("Replace ALL links with the original list? (Nothing is saved until you press Save.)")) return; data.links = CWLinks.defaults(); renderLinks(); };
 
   $("addBtn").onclick = () => {
     const n = prompt("Attraction name?"); if (!n) return;
@@ -117,7 +180,7 @@
     try {
       const url = `${API}/contents/${CFG.dataPath}`, h = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
       const cur = await fetch(`${url}?ref=${CFG.githubBranch}`, { headers: h }); const sha = cur.ok ? (await cur.json()).sha : undefined;
-      const r = await fetch(url, { method: "PUT", headers: h, body: JSON.stringify({ message: "Update attractions via admin", content: b64(JSON.stringify(data, null, 2) + "\n"), branch: CFG.githubBranch, sha }) });
+      const r = await fetch(url, { method: "PUT", headers: h, body: JSON.stringify({ message: "Update attractions via admin", content: b64(JSON.stringify(data, (k, v) => k === "_f" ? undefined : v, 2) + "\n"), branch: CFG.githubBranch, sha }) });
       const b = await r.json().catch(() => ({}));
       if (!r.ok) { msg($("saveMsg"), `Save failed (${r.status}): ${b.message || ""}`); }
       else {
