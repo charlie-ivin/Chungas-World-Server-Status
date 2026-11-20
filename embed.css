@@ -1,0 +1,5 @@
+/* Standalone single-attraction embed. Loaded after style.css. */
+html, body { margin: 0; background: transparent; min-height: 0; height: auto; }
+body { padding: 4px 8px 8px 4px; }          /* room for the card's pixel shadow */
+.att-card { width: 100%; max-width: 560px; }
+.att-card.is-link { cursor: default; }
