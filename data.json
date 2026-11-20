@@ -72,5 +72,11 @@
       "note": "",
       "reopensAt": ""
     }
-  ]
+  ],
+  "home": {
+    "title": "Welcome to the\nChungas World Website",
+    "subtitle": "\"Chungas World is a ultimate destination for all things fun, interactive, and engaging! Dive into a world of games, stories, and more. Join a community of fans and explore endless entertainment!\"",
+    "youtube": "https://www.youtube.com/watch?v=IdvYvZFMIrQ",
+    "dim": 25
+  }
 }
