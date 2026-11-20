@@ -5,9 +5,10 @@ body { margin: 0; background: #1c1c19; overflow: hidden; }
 
 /* Video background (no controls: the iframe ignores the mouse and is scaled to cover the screen) */
 .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(#5a4a2c, #1c1c19); }
-/* The video is drawn 20% bigger and shifted up, so YouTube's title bar (top) and subtitles (bottom) fall off-screen. It stays hidden until it is playing, so no play button or title ever shows. */
+/* (YouTube fallback) The video is drawn 20% bigger and shifted up, so YouTube's title bar (top) and subtitles (bottom) fall off-screen. It stays hidden until it is playing, so no play button or title ever shows. */
 #video { opacity: 0; transition: opacity .8s ease; }
 #video.on { opacity: 1; }
+.bg video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .bg iframe { position: absolute; top: calc(max(100vh, 56.25vw) * -0.08); left: 50%; width: calc(max(100vw, 177.78vh) * 1.2); height: calc(max(100vh, 56.25vw) * 1.2); transform: translateX(-50%); border: 0; pointer-events: none; }
 .dim { position: absolute; inset: 0; background: #000; opacity: .25; pointer-events: none; }
 
