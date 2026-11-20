@@ -13,7 +13,7 @@
       if (!b.permissions || !b.permissions.push) return msg($("loginMsg"), "Token works but has no write access to this repo.");
       token = v; $("tokenInput").value = ""; $("loginPanel").style.display = "none"; $("adminMain").style.display = "block";
       $("loginState").textContent = "Logged in"; $("loginState").classList.add("extended");
-      data = await CW.load(); render();
+      data = await CW.load(); data.home = CWHome.withDefaults(data.home); bindHome(); render();
     } catch (e) { msg($("loginMsg"), "Network error contacting GitHub."); }
   };
 
@@ -59,6 +59,18 @@
     data.attractions.push({ id, name: n, icon: CW.slug(n), description: "", status: "open", allDay: false, open: "10:00", close: "18:00", note: "", reopensAt: "" });
     render();
   };
+
+  // Home page settings (saved inside data.json under "home")
+  function bindHome() {
+    const H = data.home, map = { homeTitle: "title", homeSub: "subtitle", homeYt: "youtube", homeDim: "dim" };
+    const check = () => { const raw = H.youtube, id = CWHome.ytId(raw);
+      $("homeYtCheck").textContent = !raw ? "No video set — the page shows a plain dark background." : id ? `Video found (${id}). Make sure the video allows embedding.` : "That doesn't look like a YouTube link."; };
+    Object.entries(map).forEach(([elId, key]) => {
+      const el = $(elId); el.value = H[key] ?? "";
+      el.oninput = () => { H[key] = key === "dim" ? Math.min(90, Math.max(0, +el.value || 0)) : el.value; if (key === "youtube") check(); };
+    });
+    check();
+  }
 
   const b64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
 
