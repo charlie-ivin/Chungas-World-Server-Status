@@ -199,10 +199,6 @@
             "path": "/fun-co-games-hub"
           },
           {
-            "label": "Chungas Building Hire",
-            "path": "/building-hire"
-          },
-          {
             "label": "The Race Centre",
             "path": "/the-race-centre"
           }
@@ -297,6 +293,10 @@
           {
             "label": "GOVERNMENT PARK OFFICE",
             "path": "/gov/gov-park"
+          },
+          {
+            "label": "Chungas Building Hire",
+            "path": "/gov/building-hire"
           }
         ]
       },
