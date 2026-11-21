@@ -1,6 +1,6 @@
+# Pages carry a noindex tag so search engines drop them. Crawling must stay allowed for those pages, otherwise search engines cannot see the tag.
+# The admin and dashboard pages are not linked anywhere, so they are simply kept out of crawling.
 User-agent: *
 Disallow: /admin.html
 Disallow: /admin.js
 Disallow: /dashboard.html
-
-Sitemap: https://coasters-park-queue-times.chungasworld.co.uk/sitemap.xml
