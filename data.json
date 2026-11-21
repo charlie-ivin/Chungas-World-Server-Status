@@ -131,6 +131,18 @@
       "close": "21:00",
       "note": "",
       "reopensAt": ""
+    },
+    {
+      "id": "the-race-centre",
+      "name": "The Race Centre",
+      "icon": "the-race-centre",
+      "description": "",
+      "status": "open",
+      "allDay": false,
+      "open": "10:00",
+      "close": "21:00",
+      "note": "",
+      "reopensAt": ""
     }
   ],
   "home": {
