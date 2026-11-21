@@ -201,6 +201,10 @@
           {
             "label": "Chungas Building Hire",
             "path": "/building-hire"
+          },
+          {
+            "label": "The Race Centre",
+            "path": "/the-race-centre"
           }
         ]
       },
