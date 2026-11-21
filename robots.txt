@@ -1,6 +1,10 @@
-# Pages carry a noindex tag so search engines drop them. Crawling must stay allowed for those pages, otherwise search engines cannot see the tag.
-# The admin and dashboard pages are not linked anywhere, so they are simply kept out of crawling.
+# Every page carries a noindex tag, so search engines drop them (crawling must stay allowed for pages, or the tag can't be seen).
+# Files that can't carry that tag are kept out of crawling here instead.
 User-agent: *
 Disallow: /admin.html
 Disallow: /admin.js
 Disallow: /dashboard.html
+Disallow: /data.json
+Disallow: /log.json
+Disallow: /background.jpg
+Disallow: /background.mp4
