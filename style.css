@@ -363,16 +363,16 @@ html.map-only-html, body.map-only {
 /* ── Attractions ─────────────────────────────────────────── */
 .att-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .att-card{display:flex;gap:14px;align-items:center;background:var(--panel);color:var(--ink);border:4px solid var(--stone-dark);padding:12px;box-shadow:4px 4px 0 rgba(0,0,0,.4)}
-.att-ico{flex:none;width:72px;height:72px;border:3px solid var(--ink);background:#fff;display:grid;place-items:center;overflow:hidden;font-family:"Press Start 2P",monospace;font-size:20px;color:var(--stone)}
+.att-ico{flex:none;width:84px;height:84px;border:3px solid var(--ink);background:#fff;display:grid;place-items:center;overflow:hidden;font-family:"Press Start 2P",monospace;font-size:20px;color:var(--stone)}
 .att-ico img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;display:block}
-.att-name{font-weight:700;font-size:22px;line-height:1.2;margin-bottom:6px}
-.att-desc{font-size:12px;color:var(--stone-dark);margin:4px 0}
-.att-hours{font-size:14px;font-weight:600}
-.att-pill{display:inline-block;font-family:"Press Start 2P",monospace;font-size:8px;line-height:1.5;padding:6px 8px;border:3px solid var(--ink);background:var(--grass);color:#fff}
+.att-name{font-weight:700;font-size:26px;line-height:1.2;margin-bottom:8px}
+.att-desc{font-size:15px;color:var(--stone-dark);margin:4px 0}
+.att-hours{font-size:17px;font-weight:600}
+.att-pill{display:inline-block;font-family:"Press Start 2P",monospace;font-size:11px;line-height:1.5;padding:7px 10px;border:3px solid var(--ink);background:var(--grass);color:#fff}
 .att-pill.soon,.att-pill.engineering{background:var(--amber);color:var(--ink)}
 .att-pill.closed,.att-pill.temp_shut{background:var(--red)}
 .att-pill.private_event{background:var(--sky);color:var(--ink)}
-.att-note{font-size:12px;margin-top:4px;font-style:italic}
+.att-note{font-size:15px;margin-top:4px;font-style:italic}
 .att-empty{padding:20px;text-align:center}
 body.embed .park-header{display:none}
 body.embed .admin-shell{padding:8px}
@@ -389,3 +389,5 @@ body.embed .admin-shell{padding:8px}
 .nav-links a{font-family:"Press Start 2P",monospace;font-size:9px;color:var(--ink);background:var(--gold);border:3px solid var(--ink);padding:7px 10px;text-decoration:none}
 body.embed .nav-links{display:none}
 body.embed .map-wrap{padding:0}
+
+@media(max-width:600px){.park-header .pixel-heading{font-size:20px}.att-grid{grid-template-columns:1fr}.att-card{padding:14px}}
