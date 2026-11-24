@@ -7,7 +7,7 @@
 <title>Chungas World</title>
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="stylesheet" href="style.css?v=3" />
-<link rel="stylesheet" href="home.css?v=10" />
+<link rel="stylesheet" href="home.css?v=11" />
 </head>
 <body>
 <div id="visMark"></div>
@@ -120,17 +120,21 @@ function renderList() {
   fitList();
 }
 
-// Auto-sizes the attractions: finds the biggest scale (--k) at which every card is visible without scrolling.
-// Runs on load, on window resize and whenever attractions are added/removed, so it grows for few attractions and shrinks for many.
+// Auto-sizes the attractions: finds the biggest scale (--k) at which every card is visible with NO scrolling at all.
+// Runs on load, on window resize, whenever the list's height changes (e.g. inside Google Sites) and when attractions are added/removed,
+// so it grows for few attractions and shrinks for many.
 function fitList() {
   const l = $("list"); l.style.setProperty("--k", 1);
   if (matchMedia("(max-width: 820px)").matches) return;      // phones: normal scrolling page
-  const fits = k => { l.style.setProperty("--k", k); return l.scrollHeight <= l.clientHeight + 1; };
+  const fits = k => { l.style.setProperty("--k", k); return l.scrollHeight <= l.clientHeight; };
   let lo = 0.2, hi = 1.6;                                    // smallest / largest allowed scale
   if (fits(hi)) return;                                      // few attractions: use the largest size
-  for (let i = 0; i < 12; i++) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
-  l.style.setProperty("--k", lo.toFixed(3));
+  for (let i = 0; i < 14; i++) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+  l.style.setProperty("--k", (lo * 0.99).toFixed(3));        // 1% safety margin so rounding can never push the last card off the bottom
 }
+let fitQueued = false;
+const queueFit = () => { if (fitQueued || !data) return; fitQueued = true; requestAnimationFrame(() => { fitQueued = false; fitList(); }); };
+if (window.ResizeObserver) new ResizeObserver(queueFit).observe($("list"));
 addEventListener("resize", () => data && fitList());
 
 // Embedded in another site (e.g. Google Sites) the frame can be taller than the visitor's window, and the visitor scrolls the outer page.
