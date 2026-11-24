@@ -33,7 +33,7 @@ body { margin: 0; background: #1c1c19; overflow: hidden; }
 .side-head { flex: none; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
 .side-head h2 { font-size: 14px; color: var(--gold); margin: 0; text-shadow: 2px 2px 0 var(--ink); }
 .side-head .park-status-pill { font-size: 9px; padding: 6px 8px; }
-#list { --k: 1; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: calc(6px * var(--k)); overflow-y: auto; scrollbar-width: none; }
+#list { --k: 1; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: calc(6px * var(--k)); overflow: hidden; }   /* never scrolls: fitList() sizes the cards so they all fit */
 #list::-webkit-scrollbar { display: none; }
 .side .att-card { flex: 1 0 auto; align-items: center; padding: calc(6px * var(--k)) calc(8px * var(--k)); gap: calc(10px * var(--k)); box-shadow: 3px 3px 0 rgba(0,0,0,.45); }
 .side .att-ico { width: calc(48px * var(--k)); height: calc(48px * var(--k)); font-size: calc(16px * var(--k)); border-width: 2px; }
